@@ -1,0 +1,12 @@
+* text=auto eol=lf
+*.java text eol=lf
+*.smali text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.vpk binary
+*.ttf binary
+*.otf binary
+*.png binary
+*.jpg binary

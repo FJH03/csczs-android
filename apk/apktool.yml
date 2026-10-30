@@ -1,0 +1,17 @@
+version: 2.12.1
+apkFileName: CS零点行动：起源_Build 922.apk.1
+usesFramework:
+  ids:
+  - 1
+sdkInfo:
+  minSdkVersion: '19'
+  targetSdkVersion: 24
+packageInfo:
+  forcedPackageId: 127
+  renameManifestPackage: cnsr.fjh03.czero
+versionInfo:
+  versionCode: 1
+  versionName: Build 922
+doNotCompress:
+- arsc
+- png

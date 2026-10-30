@@ -1,0 +1,16 @@
+.cache/
+.tools/
+__pycache__/
+*.pyc
+*.apk
+*.apks
+*.aab
+*.build.json
+*.so
+*.keystore
+*.jks
+/lib/
+/native-libs/
+/dist/
+*.idsig
+*.log
