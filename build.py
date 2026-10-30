@@ -93,6 +93,43 @@ def native_directories(root):
     return result
 
 
+def read_game_build(path):
+    path = file_option(path, "game Build metadata")
+    text = path.read_text(encoding="utf-8-sig")
+    numbers = {int(text.strip())} if re.fullmatch(r"\s*[0-9]+\s*", text) else {
+        int(value) for value in re.findall(r"\bBuild:[ \t]*([0-9]+)\b", text)
+    }
+    if len(numbers) != 1:
+        fail("Expected one game Build number in " + str(path) + "; use the Build: line from the version command.")
+    return numbers.pop()
+
+
+def game_build_info(args, native):
+    sources = {}
+    if args.build_number is not None:
+        if args.build_number < 0:
+            fail("--build-number must be nonnegative.")
+        sources["--build-number"] = args.build_number
+    if args.version_log:
+        sources[str(Path(args.version_log).resolve())] = read_game_build(args.version_log)
+    if args.native_libs:
+        root = Path(args.native_libs).resolve()
+        directories = {root}
+        if root.name in ALIASES:
+            directories.add(root.parent)
+        if (root / "lib").is_dir():
+            directories.add(root / "lib")
+        directories.update(files[0].parent for files in native.values())
+        for directory in sorted(directories):
+            metadata = directory / "build-number.txt"
+            if metadata.is_file():
+                sources[str(metadata)] = read_game_build(metadata)
+    if len(set(sources.values())) > 1:
+        fail("Conflicting game Build numbers: " + json.dumps(sources, ensure_ascii=False))
+    number = next(iter(sources.values()), None)
+    return number, sources
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tools-dir", help="Portable tool folder or its ready/ directory")
@@ -102,10 +139,15 @@ def main():
     parser.add_argument("--apktool")
     parser.add_argument("--lambda-stubs")
     parser.add_argument("--native-libs", help="Complete engine libraries grouped by Android ABI")
+    build_version = parser.add_mutually_exclusive_group()
+    build_version.add_argument("--build-number", type=int, help="Game Build number reported by the version command")
+    build_version.add_argument("--version-log", help="File containing the game's version command output")
     parser.add_argument("--output", help="Unsigned APK output; default is under .cache/dist")
     args = parser.parse_args()
     java, javac, android, d8, apktool, lambdas = find_tools(args)
     native = native_directories(args.native_libs) if args.native_libs else {}
+    build_number, build_sources = game_build_info(args, native)
+    version_name = "Build " + str(build_number) if build_number is not None else "Development"
     cache = ROOT / ".cache"
     cache.mkdir(exist_ok=True)
     work = Path(tempfile.mkdtemp(prefix="build-", dir=cache)).resolve()
@@ -126,6 +168,12 @@ def main():
 
     stage = work / "apk"
     shutil.copytree(ROOT / "apk", stage)
+    metadata = stage / "apktool.yml"
+    version_text, replacements = re.subn(r"(?m)^  versionName:.*$", "  versionName: " + version_name,
+                                         metadata.read_text(encoding="utf-8"))
+    if replacements != 1:
+        fail("Expected exactly one versionName in apk/apktool.yml.")
+    metadata.write_text(version_text, encoding="utf-8")
     # Keep source files immutable: all Java compilation and smali replacement happen in .cache.
     classes, dex = work / "classes", work / "dex"
     classes.mkdir()
@@ -170,7 +218,8 @@ def main():
             copied.append("lib/" + abi + "/" + source.name)
         version_hints[abi] = VERSION.encode("ascii") in next(p for p in files if p.name == "libSDL2.so").read_bytes()
     suffix = "" if native else "-pending-native"
-    output = Path(args.output).resolve() if args.output else ROOT / ".cache" / "dist" / ("csczs-SDL" + VERSION + suffix + "-unsigned.apk")
+    build_label = "Build" + str(build_number) if build_number is not None else "development"
+    output = Path(args.output).resolve() if args.output else ROOT / ".cache" / "dist" / ("csczs-" + build_label + suffix + "-unsigned.apk")
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.exists():
         fail("Output already exists; choose another --output path: " + str(output))
@@ -183,6 +232,8 @@ def main():
     report = {
         "output": str(output), "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
         "sdl_java_version": VERSION, "min_sdk": 19, "target_sdk": 24,
+        "game_build_number": build_number, "game_build_sources": build_sources,
+        "apk_version_name": version_name,
         "unsigned": True, "abis": sorted(native), "native_libraries": copied,
         "pending_native_libraries": not bool(native), "native_sdl_version_string_hints": version_hints,
         "native_version_and_runtime_compatibility_must_be_verified": True,
@@ -192,6 +243,8 @@ def main():
     report_path = output.with_suffix(".build.json")
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
+    if build_number is None:
+        print("DEVELOPMENT VERSION: supply --build-number, --version-log, or build-number.txt alongside native libraries for a numbered APK.")
     if not native:
         print("PENDING NATIVE: this APK contains no .so files and cannot run the game yet.")
 

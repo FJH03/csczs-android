@@ -222,7 +222,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     // This is what SDL runs in. It invokes SDL_main(), eventually
     protected static Thread mSDLThread;
 
-    // Source Engine launcher bootstrap, retained from Build 922.
+    // Source Engine launcher bootstrap, retained from the original APK.
     private static boolean mIsInitCalled;
 
     protected static SDLGenericMotionListener_API12 getMotionListener() {

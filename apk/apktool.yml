@@ -1,5 +1,5 @@
 version: 2.12.1
-apkFileName: CS零点行动：起源_Build 922.apk.1
+apkFileName: csczs.apk
 usesFramework:
   ids:
   - 1
@@ -11,7 +11,7 @@ packageInfo:
   renameManifestPackage: cnsr.fjh03.czero
 versionInfo:
   versionCode: 1
-  versionName: Build 922
+  versionName: Development
 doNotCompress:
 - arsc
 - png
