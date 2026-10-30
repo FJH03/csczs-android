@@ -218,8 +218,9 @@ def main():
             copied.append("lib/" + abi + "/" + source.name)
         version_hints[abi] = VERSION.encode("ascii") in next(p for p in files if p.name == "libSDL2.so").read_bytes()
     suffix = "" if native else "-pending-native"
-    build_label = "Build" + str(build_number) if build_number is not None else "development"
-    output = Path(args.output).resolve() if args.output else ROOT / ".cache" / "dist" / ("csczs-" + build_label + suffix + "-unsigned.apk")
+    build_label = "build " + str(build_number) if build_number is not None else "development"
+    abi_label = "-" + next(iter(native)) if len(native) == 1 else ""
+    output = Path(args.output).resolve() if args.output else ROOT / ".cache" / "dist" / ("csczs-" + build_label + abi_label + suffix + "-unsigned.apk")
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.exists():
         fail("Output already exists; choose another --output path: " + str(output))
