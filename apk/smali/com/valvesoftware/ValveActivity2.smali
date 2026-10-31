@@ -258,7 +258,7 @@
 
     const-string v8, "argv"
 
-    const-string v9, "-nobackgroundlevel"
+    const-string v9, "-nobackgroundlevel -dxlevel 95"
 
     invoke-interface {v7, v8, v9}, Landroid/content/SharedPreferences;->getString(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
