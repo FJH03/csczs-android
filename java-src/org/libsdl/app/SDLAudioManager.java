@@ -238,7 +238,7 @@ public class SDLAudioManager {
                 }
 
                 if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */ && deviceId != 0) {
-                    mAudioRecord.setPreferredDevice(getOutputAudioDeviceInfo(deviceId));
+                    mAudioRecord.setPreferredDevice(getInputAudioDeviceInfo(deviceId));
                 }
 
                 mAudioRecord.startRecording();
@@ -265,7 +265,7 @@ public class SDLAudioManager {
                 }
 
                 if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */ && deviceId != 0) {
-                    mAudioTrack.setPreferredDevice(getInputAudioDeviceInfo(deviceId));
+                    mAudioTrack.setPreferredDevice(getOutputAudioDeviceInfo(deviceId));
                 }
 
                 mAudioTrack.play();
