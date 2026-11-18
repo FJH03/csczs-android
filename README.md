@@ -101,13 +101,13 @@ python build.py --native-libs native-libs --version-log game-version.log
 
 也可用 `--build-number 编号` 显式指定。自动打包时，可随动态库提供 `native-libs/build-number.txt`，文件内容为该编号，脚本会自动读取，无需修改 APK 源码。多个 ABI 的目录也可各自携带此文件；编号不一致时停止构建。
 
-例如，游戏编号为 923 且只传入 ARM64 动态库时，APK 版本名为 `Build 923`，默认文件名为 `csczs-build 923-arm64-v8a-unsigned.apk`。文件名统一小写，`build` 和编号之间保留一个空格。显式指定 `--output` 时保留指定文件名。编号只写入暂存工程，不会改动源码中的版本模板。
+例如，游戏编号为 923 且只传入 ARM64 动态库时，APK 版本名为 `Build 923`，默认文件名为 `csczs-build-923-arm64-v8a-unsigned.apk`。文件名统一小写，`build` 与编号之间用连字符连接。显式指定 `--output` 时保留指定文件名。编号只写入暂存工程，不会改动源码中的版本模板。
 
 未提供编号时，版本名为 `Development`，默认文件名包含 `development`。脚本不会用打包日期或启动器 Git 提交数猜测游戏版本。编号应来自本次打包的引擎构建；后续工作流可以把同源编号与动态库一起交给本脚本，APK 仍为未签名产物。
 
 ## 对齐、签名和安装
 
-`build.py` 本身输出未签名 APK；引擎仓库的 GitHub Actions 会继续执行对齐、公开测试签名和校验，并分别上传 ARM32、ARM64 成品，例如 `csczs-build 923-arm64-v8a-signed.apk`。下载安装即可，无需再用 MT 签名。lib 下载包的名称不带 Build 编号。
+`build.py` 本身输出未签名 APK；引擎仓库的 GitHub Actions 会继续执行对齐、公开测试签名和校验，并分别上传 ARM32、ARM64 成品，例如 `csczs-build-923-arm64-v8a-signed.apk`。下载安装即可，无需再用 MT 签名。lib 下载包的名称不带 Build 编号。
 
 工作流使用 [AOSP 官方公开 testkey](https://android.googlesource.com/platform/build/+/refs/tags/android-15.0.0_r1/target/product/security/)，在运行时下载并校验哈希，不需要 GitHub Secrets，也不会读取或上传你的个人签名密钥。两种架构和后续构建使用同一个证书，证书 SHA-256 为：
 
